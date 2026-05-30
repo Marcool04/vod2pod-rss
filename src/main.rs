@@ -25,7 +25,8 @@ async fn main() -> std::io::Result<()> {
         );
     }
 
-    let listener = TcpListener::bind("0.0.0.0:8080").expect("Failed to bind");
+    let listen_host_port = std::env::var("VOD2POD_LISTEN_HOST_PORT").expect("Failed to get env var VOD2POD_LISTEN_HOST_PORT");
+    let listener = TcpListener::bind(listen_host_port).expect("Failed to bind");
     info!("listening on http://{}", listener.local_addr().unwrap());
     server::spawn_server(listener)
         .expect("could not setup server")
