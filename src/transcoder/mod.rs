@@ -43,58 +43,58 @@ pub struct Transcoder {
 }
 
 impl Transcoder {
-    pub async fn new(ffmpeg_paramenters: &FfmpegParameters) -> eyre::Result<Self> {
-        let provider = provider::from(&ffmpeg_paramenters.url);
+    pub async fn new(ffmpeg_parameters: &FfmpegParameters) -> eyre::Result<Self> {
+        let provider = provider::from(&ffmpeg_parameters.url);
 
         let ffmpeg_command = Self::get_ffmpeg_command(&FfmpegParameters {
-            seek_time: ffmpeg_paramenters.seek_time,
-            url: provider.get_stream_url(&ffmpeg_paramenters.url).await?,
-            audio_codec: ffmpeg_paramenters.audio_codec.to_owned(),
-            bitrate_kbit: ffmpeg_paramenters.bitrate_kbit,
-            max_rate_kbit: ffmpeg_paramenters.max_rate_kbit,
-            expected_bytes_count: ffmpeg_paramenters.expected_bytes_count,
-            timeout_in_seconds: ffmpeg_paramenters.timeout_in_seconds,
+            seek_time: ffmpeg_parameters.seek_time,
+            url: provider.get_stream_url(&ffmpeg_parameters.url).await?,
+            audio_codec: ffmpeg_parameters.audio_codec.to_owned(),
+            bitrate_kbit: ffmpeg_parameters.bitrate_kbit,
+            max_rate_kbit: ffmpeg_parameters.max_rate_kbit,
+            expected_bytes_count: ffmpeg_parameters.expected_bytes_count,
+            timeout_in_seconds: ffmpeg_parameters.timeout_in_seconds,
         });
 
         Ok(Self {
             ffmpeg_command,
-            expected_bytes_count: ffmpeg_paramenters.expected_bytes_count,
+            expected_bytes_count: ffmpeg_parameters.expected_bytes_count,
         })
     }
 
-    fn get_ffmpeg_command(ffmpeg_paramenters: &FfmpegParameters) -> Command {
+    fn get_ffmpeg_command(ffmpeg_parameters: &FfmpegParameters) -> Command {
         debug!("generating ffmpeg command");
         let mut command = Command::new("ffmpeg");
         let command_ref = &mut command;
 
         command_ref
-            .args(["-ss", ffmpeg_paramenters.seek_time.to_string().as_str()])
+            .args(["-ss", ffmpeg_parameters.seek_time.to_string().as_str()])
             .args([
                 "-protocol_whitelist",
                 "file,http,https,tcp,tls",
                 "-i",
-                ffmpeg_paramenters.url.as_str(),
+                ffmpeg_parameters.url.as_str(),
             ])
             .args([
                 "-acodec",
-                ffmpeg_paramenters.audio_codec.get_ffmpeg_codec_str(),
+                ffmpeg_parameters.audio_codec.get_ffmpeg_codec_str(),
             ])
             .args([
                 "-ab",
-                format!("{}k", ffmpeg_paramenters.bitrate_kbit).as_str(),
+                format!("{}k", ffmpeg_parameters.bitrate_kbit).as_str(),
             ])
-            .args(["-f", ffmpeg_paramenters.audio_codec.get_extension_str()])
+            .args(["-f", ffmpeg_parameters.audio_codec.get_extension_str()])
             .args([
                 "-bufsize",
-                (ffmpeg_paramenters.bitrate_kbit * 30).to_string().as_str(),
+                (ffmpeg_parameters.bitrate_kbit * 30).to_string().as_str(),
             ])
             .args([
                 "-maxrate",
-                format!("{}k", ffmpeg_paramenters.max_rate_kbit).as_str(),
+                format!("{}k", ffmpeg_parameters.max_rate_kbit).as_str(),
             ])
             .args([
                 "-timeout",
-                ffmpeg_paramenters.timeout_in_seconds.to_string().as_str(),
+                ffmpeg_parameters.timeout_in_seconds.to_string().as_str(),
             ])
             .args(["-hide_banner"])
             .args(["-loglevel", "error"])

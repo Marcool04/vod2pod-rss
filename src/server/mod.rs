@@ -281,7 +281,7 @@ async fn transcode_to_mp3(req: HttpRequest, query: web::Query<TranscodizeQuery>)
     debug!("choosen timeout in seconds: {timeout_in_seconds}");
 
     let codec = conf().get(ConfName::AudioCodec).unwrap().into();
-    let ffmpeg_paramenters = FfmpegParameters {
+    let ffmpeg_parameters = FfmpegParameters {
         seek_time: seek_secs,
         url: stream_url.clone(),
         audio_codec: codec,
@@ -303,11 +303,11 @@ async fn transcode_to_mp3(req: HttpRequest, query: web::Query<TranscodizeQuery>)
             .finish();
     }
 
-    match Transcoder::new(&ffmpeg_paramenters).await {
+    match Transcoder::new(&ffmpeg_parameters).await {
         Ok(transcoder) => {
             let stream = transcoder.get_transcode_stream();
 
-            let mut response_builder = if ffmpeg_paramenters.seek_time <= 0.1 {
+            let mut response_builder = if ffmpeg_parameters.seek_time <= 0.1 {
                 HttpResponse::Ok()
             } else {
                 HttpResponse::PartialContent()
